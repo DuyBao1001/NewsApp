@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+using NewsApp.Data;
+using NewsApp.BLL;
+
+namespace NewsApp.UI
+{
+    public partial class ArticleForm : Form
+    {
+        private readonly Article _article;
+        private readonly ArticleServices _articleServices;
+        private readonly CommentServices _commentServices;
+        private readonly User _user;
+
+        public ArticleForm(Article article, ArticleServices articleServices, CommentServices commentServices, User user)
+        {
+            InitializeComponent();
+            _article = article;
+            _articleServices = articleServices;
+            _commentServices = commentServices;
+            _user = user;
+            DisplayArticle(article);
+
+            btnSendComment.Click += BtnSendComment_Click;
+            _commentServices.DataChanged += CommentServices_DataChanged;
+            _commentServices.GetCommentsResult += CommentServices_GetCommentsResult;
+
+            // Load comments
+            _commentServices.GetComments(_article.ArticleID);
+        }
+
+        private void CommentServices_GetCommentsResult(List<Comment> comments)
+        {
+            
+        }
+
+        private void UpdateCommentList(List<Comment> comments)
+        {
+            
+        }
+
+        private void CommentServices_DataChanged(bool success, string message)
+        {
+            
+        }
+
+        private void BtnSendComment_Click(object? sender, EventArgs e)
+        {
+            
+        }
+
+        private void DisplayArticle(Article article)
+        {
+            
+        }
+
+        private void pbImage_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
