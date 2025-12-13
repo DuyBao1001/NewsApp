@@ -115,33 +115,75 @@ namespace NewsApp.UI
 
         private void OnDeleteArticleResult(bool success, string message)
         {
-            
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool, string>(OnDeleteArticleResult), success, message);
+                return;
+            }
+            MessageBox.Show(message);
+            if (success) LoadArticles();
         }
 
         private void OnAddCategoryResult(bool success, string message)
         {
-            
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool, string>(OnAddCategoryResult), success, message);
+                return;
+            }
+            MessageBox.Show(message);
+            if (success) LoadCategories();
         }
 
         private void OnUpdateCategoryResult(bool success, string message)
         {
-            
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool, string>(OnUpdateCategoryResult), success, message);
+                return;
+            }
+            MessageBox.Show(message);
+            if (success) LoadCategories();
         }
 
         private void OnDeleteCategoryResult(bool success, string message)
         {
-           
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool, string>(OnDeleteCategoryResult), success, message);
+                return;
+            }
+            MessageBox.Show(message);
+            if (success) LoadCategories();
         }
 
         private void OnGetCategoriesResult(List<Category> categories)
         {
-           
+            if (InvokeRequired)
+            {
+                Invoke(new Action<List<Category>>(OnGetCategoriesResult), categories);
+                return;
+            }
+            _categories = categories;
+            dgvCategories.DataSource = null;
+            dgvCategories.DataSource = _categories;
         }
 
         // Button event handlers
         private void BtnDeleteUser_Click(object? sender, EventArgs e)
         {
-           
+            if (dgvUsers.SelectedRows.Count > 0)
+            {
+                var user = dgvUsers.SelectedRows[0].DataBoundItem as User;
+                if (user != null)
+                {
+                    var result = MessageBox.Show($"Bạn có chắc muốn xóa user '{user.FullName}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        _adminServices.DeleteUser(user.Id);
+                    }
+                }
+            }
         }
 
         private void BtnRefreshUsers_Click(object? sender, EventArgs e)
@@ -151,7 +193,18 @@ namespace NewsApp.UI
 
         private void BtnDeleteArticle_Click(object? sender, EventArgs e)
         {
-           
+            if (dgvArticles.SelectedRows.Count > 0)
+            {
+                var article = dgvArticles.SelectedRows[0].DataBoundItem as Article;
+                if (article != null)
+                {
+                    var result = MessageBox.Show($"Bạn có chắc muốn xóa bài viết '{article.Title}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        _adminServices.DeleteArticle(article.ArticleID);
+                    }
+                }
+            }
         }
 
         private void BtnRefreshArticles_Click(object? sender, EventArgs e)
@@ -167,17 +220,57 @@ namespace NewsApp.UI
 
         private void BtnSaveCategory_Click(object? sender, EventArgs e)
         {
-            
+            if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên chuyên mục", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string categoryName = txtCategoryName.Text.Trim();
+
+            // Check if we're updating an existing category or adding a new one
+            if (dgvCategories.SelectedRows.Count > 0)
+            {
+                var selectedCategory = dgvCategories.SelectedRows[0].DataBoundItem as Category;
+                if (selectedCategory != null)
+                {
+                    // Update existing category
+                    _adminServices.UpdateCategory(selectedCategory.CategoryID, categoryName);
+                }
+            }
+            else
+            {
+                // Add new category
+                _adminServices.AddCategory(categoryName);
+            }
         }
 
         private void BtnDeleteCategory_Click(object? sender, EventArgs e)
         {
-            
+            if (dgvCategories.SelectedRows.Count > 0)
+            {
+                var category = dgvCategories.SelectedRows[0].DataBoundItem as Category;
+                if (category != null)
+                {
+                    var result = MessageBox.Show($"Bạn có chắc muốn xóa chuyên mục '{category.Name}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        _adminServices.DeleteCategory(category.CategoryID);
+                    }
+                }
+            }
         }
 
         private void DgvCategories_SelectionChanged(object? sender, EventArgs e)
         {
-            
+            if (dgvCategories.SelectedRows.Count > 0)
+            {
+                var category = dgvCategories.SelectedRows[0].DataBoundItem as Category;
+                if (category != null)
+                {
+                    txtCategoryName.Text = category.Name;
+                }
+            }
         }
     }
 }
