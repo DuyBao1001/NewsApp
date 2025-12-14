@@ -1,4 +1,5 @@
 ﻿using NewsApp.BLL;
+using NewsApp.Common;
 using NewsApp.Data;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -45,6 +47,11 @@ namespace NewsApp.UI
             _articleServices.GetLatestArticlesResult += OnGetArticlesResult;
             _categoryServices.GetCategoriesResult += OnGetCategoriesResult;
 
+            _adminServices.GetPendingArticlesResult += OnGetPendingArticlesResult;
+            _adminServices.ApproveArticleResult += OnApproveArticleResult;
+
+
+
             // Wire up button events
             btnDeleteUser.Click += BtnDeleteUser_Click;
             btnRefreshUsers.Click += BtnRefreshUsers_Click;
@@ -54,6 +61,8 @@ namespace NewsApp.UI
             btnSaveCategory.Click += BtnSaveCategory_Click;
             btnDeleteCategory.Click += BtnDeleteCategory_Click;
             dgvCategories.SelectionChanged += DgvCategories_SelectionChanged;
+            btnApprove.Click += btnApprove_Click;
+            btnRefreshPending.Click += btnRefreshPending_Click;
         }
 
         private void AdminForm_Load(object? sender, EventArgs e)
@@ -61,21 +70,39 @@ namespace NewsApp.UI
             LoadUsers();
             LoadCategories();
             LoadArticles();
+            LoadPendingArticles();
         }
 
-        private void LoadUsers()
+        private void LoadUsers() => _adminServices.GetAllUsers();
+        private void LoadCategories() => _categoryServices.GetCategories();
+        private void LoadArticles() => _articleServices.GetLatestArticles();
+
+
+        private void LoadPendingArticles()
         {
-            _adminServices.GetAllUsers();
+            _adminServices.GetPendingArticles();
         }
 
-        private void LoadCategories()
+        private void btnRefreshPending_Click(object? sender, EventArgs e)
         {
-            _categoryServices.GetCategories();
+            LoadPendingArticles();
         }
 
-        private void LoadArticles()
+        private void btnApprove_Click(object? sender, EventArgs e)
         {
-            _articleServices.GetLatestArticles();
+            if (dgvPendingArticles.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn một bài viết để duyệt!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Article selectedArticle = (Article)dgvPendingArticles.SelectedRows[0].DataBoundItem;
+
+            if (selectedArticle != null)
+            {
+                // Hàm đúng: Gọi qua _adminServices
+                _adminServices.ApproveArticle(selectedArticle.ArticleID);
+            }
         }
 
         private void OnGetAllUsersResult(List<User> users)
@@ -167,6 +194,43 @@ namespace NewsApp.UI
             _categories = categories;
             dgvCategories.DataSource = null;
             dgvCategories.DataSource = _categories;
+        }
+
+        private void OnGetPendingArticlesResult(List<Article> articles)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<List<Article>>(OnGetPendingArticlesResult), articles);
+                return;
+            }
+
+            dgvPendingArticles.DataSource = null;
+            dgvPendingArticles.DataSource = articles;
+
+            // Ẩn các cột không cần thiết cho gọn
+            if (dgvPendingArticles.Columns["Content"] != null)
+                dgvPendingArticles.Columns["Content"].Visible = false;
+            if (dgvPendingArticles.Columns["Image"] != null)
+                dgvPendingArticles.Columns["Image"].Visible = false;
+        }
+
+        private void OnApproveArticleResult(bool success, string message)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool, string>(OnApproveArticleResult), success, message);
+                return;
+            }
+
+            MessageBox.Show(message);
+
+            if (success)
+            {
+                // Nếu thành công, tải lại danh sách để bài đó biến mất
+                LoadPendingArticles();
+                // Tải lại cả danh sách bài viết chính để cập nhật
+                LoadArticles();
+            }
         }
 
         // Button event handlers
