@@ -95,7 +95,23 @@ namespace NewsApp.UI
 
         private void DisplayArticle(Article article)
         {
-            
+            lblTitle.Text = article.Title;
+            lblCategory.Text = article.CategoryName;
+            lblAuthor.Text = $"Tác giả: {article.AuthorName}";
+            lblDate.Text = article.PublishDate.ToString("dd/MM/yyyy HH:mm");
+            txtContent.Text = article.Content;
+
+            if (article.Image != null && article.Image.Length > 0)
+            {
+                using (MemoryStream ms = new MemoryStream(article.Image))
+                {
+                    pbImage.Image = Image.FromStream(ms);
+                }
+            }
+            else
+            {
+                pbImage.Image = null;
+            }
         }
 
         private void pbImage_Click(object sender, EventArgs e)
