@@ -32,5 +32,63 @@ namespace NewsApp.Common
             public const string UPDATE_CATEGORY = "UPDATE_CATEGORY";
             public const string DELETE_CATEGORY = "DELETE_CATEGORY";
         }
+        public static class ResponseCommand
+        {
+            public const string LOGIN_SUCCESS = "LOGIN_SUCCESS";
+            public const string REGISTER_SUCCESS = "REGISTER_SUCCESS";
+            public const string GET_LIST_ARTICLES_SUCCESS = "GET_LIST_ARTICLES_SUCCESS";
+            public const string LOGIN_FAIL = "LOGIN_FAIL";
+            public const string REGISTER_FAIL = "REGISTER_FAIL";
+            public const string GET_LIST_ARTICLES_FAIL = "GET_LIST_ARTICLES_FAIL";
+
+            public const string GET_ARTICLE_DETAIL_SUCCESS = "GET_ARTICLE_DETAIL_SUCCESS";
+            public const string GET_ARTICLE_DETAIL_FAIL = "GET_ARTICLE_DETAIL_FAIL";
+
+            public const string GET_PROFILE_SUCCESS = "GET_PROFILE_SUCCESS";
+            public const string GET_PROFILE_FAIL = "GET_PROFILE_FAIL";
+
+            public const string UPDATE_PROFILE_SUCCESS = "UPDATE_PROFILE_SUCCESS";
+            public const string UPDATE_PROFILE_FAIL = "UPDATE_PROFILE_FAIL";
+
+            public const string POST_ARTICLE_SUCCESS = "POST_ARTICLE_SUCCESS";
+            public const string POST_ARTICLE_FAIL = "POST_ARTICLE_FAIL";
+
+            public const string POST_COMMENT_SUCCESS = "POST_COMMENT_SUCCESS";
+            public const string POST_COMMENT_FAIL = "POST_COMMENT_FAIL";
+
+            public const string GET_CATEGORIES_SUCCESS = "GET_CATEGORIES_SUCCESS";
+            public const string GET_CATEGORIES_FAIL = "GET_CATEGORIES_FAIL";
+
+            public const string GET_LATEST_ARTICLES_SUCCESS = "GET_LATEST_ARTICLES_SUCCESS";
+            public const string GET_LATEST_ARTICLES_FAIL = "GET_LATEST_ARTICLES_FAIL";
+
+            public const string GET_ARTICLES_BY_CATEGORY_SUCCESS = "GET_ARTICLES_BY_CATEGORY_SUCCESS";
+            public const string GET_ARTICLES_BY_CATEGORY_FAIL = "GET_ARTICLES_BY_CATEGORY_FAIL";
+
+            public const string SEARCH_ARTICLES_SUCCESS = "SEARCH_ARTICLES_SUCCESS";
+            public const string SEARCH_ARTICLES_FAIL = "SEARCH_ARTICLES_FAIL";
+
+            public const string GET_COMMENTS_SUCCESS = "GET_COMMENTS_SUCCESS";
+            public const string GET_COMMENTS_FAIL = "GET_COMMENTS_FAIL";
+
+            // Admin Response Commands
+            public const string GET_ALL_USERS_SUCCESS = "GET_ALL_USERS_SUCCESS";
+            public const string GET_ALL_USERS_FAIL = "GET_ALL_USERS_FAIL";
+
+            public const string DELETE_USER_SUCCESS = "DELETE_USER_SUCCESS";
+            public const string DELETE_USER_FAIL = "DELETE_USER_FAIL";
+
+            public const string DELETE_ARTICLE_SUCCESS = "DELETE_ARTICLE_SUCCESS";
+            public const string DELETE_ARTICLE_FAIL = "DELETE_ARTICLE_FAIL";
+
+            public const string ADD_CATEGORY_SUCCESS = "ADD_CATEGORY_SUCCESS";
+            public const string ADD_CATEGORY_FAIL = "ADD_CATEGORY_FAIL";
+
+            public const string UPDATE_CATEGORY_SUCCESS = "UPDATE_CATEGORY_SUCCESS";
+            public const string UPDATE_CATEGORY_FAIL = "UPDATE_CATEGORY_FAIL";
+
+            public const string DELETE_CATEGORY_SUCCESS = "DELETE_CATEGORY_SUCCESS";
+            public const string DELETE_CATEGORY_FAIL = "DELETE_CATEGORY_FAIL";
+        }
     }
 }
