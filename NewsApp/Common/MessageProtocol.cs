@@ -24,6 +24,7 @@ namespace NewsApp.Common
             public const string SEARCH_ARTICLES = "SEARCH_ARTICLES";
             public const string GET_COMMENTS = "GET_COMMENTS";
 
+
             // Admin Commands
             public const string GET_ALL_USERS = "GET_ALL_USERS";
             public const string DELETE_USER = "DELETE_USER";
@@ -31,7 +32,11 @@ namespace NewsApp.Common
             public const string ADD_CATEGORY = "ADD_CATEGORY";
             public const string UPDATE_CATEGORY = "UPDATE_CATEGORY";
             public const string DELETE_CATEGORY = "DELETE_CATEGORY";
+
+            public const string GET_PENDING_ARTICLES = "GET_PENDING_ARTICLES";
+            public const string APPROVE_ARTICLE = "APPROVE_ARTICLE";
         }
+
         public static class ResponseCommand
         {
             public const string LOGIN_SUCCESS = "LOGIN_SUCCESS";
@@ -71,6 +76,8 @@ namespace NewsApp.Common
             public const string GET_COMMENTS_SUCCESS = "GET_COMMENTS_SUCCESS";
             public const string GET_COMMENTS_FAIL = "GET_COMMENTS_FAIL";
 
+
+
             // Admin Response Commands
             public const string GET_ALL_USERS_SUCCESS = "GET_ALL_USERS_SUCCESS";
             public const string GET_ALL_USERS_FAIL = "GET_ALL_USERS_FAIL";
@@ -89,6 +96,16 @@ namespace NewsApp.Common
 
             public const string DELETE_CATEGORY_SUCCESS = "DELETE_CATEGORY_SUCCESS";
             public const string DELETE_CATEGORY_FAIL = "DELETE_CATEGORY_FAIL";
+
+            public const string GET_PENDING_ARTICLES_SUCCESS = "GET_PENDING_ARTICLES_SUCCESS";
+            public const string GET_PENDING_ARTICLES_FAIL = "GET_PENDING_ARTICLES_FAIL";
+
+            public const string APPROVE_ARTICLE_SUCCESS = "APPROVE_ARTICLE_SUCCESS";
+            public const string APPROVE_ARTICLE_FAIL = "APPROVE_ARTICLE_FAIL";
+
+
+
+
         }
     }
 }
