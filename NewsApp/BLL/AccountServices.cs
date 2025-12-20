@@ -171,24 +171,5 @@ namespace NewsApp.BLL
                 _socketClient.SendRequest(request);
             }
         }
-
-        public void ChangePassword(string username, string oldPass, string newPass)
-        {
-            if (IsConnected)
-            {
-
-                ChangePasswordModel model = new ChangePasswordModel
-                {
-                    Username = username,
-                    OldPassword = oldPass,
-                    NewPassword = newPass
-                };
-
-                string payload = JsonSerializer.Serialize(model);
-                Packet request = new Packet(MessageProtocol.RequestCommand.CHANGE_PASSWORD, payload);
-
-                _socketClient.SendRequest(request);
-            }
-        }
     }
 }
