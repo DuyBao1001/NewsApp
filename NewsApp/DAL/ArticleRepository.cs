@@ -13,9 +13,10 @@ namespace NewsApp.DAL
             try
             {
                 using SqlConnection connection = GetConnection();
-                string query =
-                    @"INSERT INTO Article (Title, Content, Image, PublishDate, AuthorID, CategoryID)
-                                VALUES (@title, @content, @image, @publishDate, @authorId, @categoryId)";
+                // --- SỬA ĐỔI: Thêm cột Status vào câu lệnh INSERT ---
+                string query = @"INSERT INTO Article (Title, Content, Image, PublishDate, AuthorID, CategoryID, Status)
+                         VALUES (@title, @content, @image, @publishDate, @authorId, @categoryId, @status)";
+
                 SqlCommand command = new(query, connection);
                 command.Parameters.AddWithValue("@title", obj.Title);
                 command.Parameters.AddWithValue("@content", obj.Content);
@@ -23,6 +24,9 @@ namespace NewsApp.DAL
                 command.Parameters.AddWithValue("@publishDate", obj.PublishDate);
                 command.Parameters.AddWithValue("@authorId", obj.AuthorID);
                 command.Parameters.AddWithValue("@categoryId", obj.CategoryID);
+
+                // --- SỬA ĐỔI: Luôn set Status = 0 (Chờ duyệt) khi đăng bài mới ---
+                command.Parameters.AddWithValue("@status", 0);
 
                 connection.Open();
                 return command.ExecuteNonQuery() > 0;
@@ -173,6 +177,7 @@ namespace NewsApp.DAL
                                  FROM Article A 
                                  JOIN [User] U ON A.AuthorID = U.UserID 
                                  JOIN Category C ON A.CategoryID = C.CategoryID
+                                 WHERE a.Status = 1
                                  ORDER BY A.PublishDate DESC";
                 SqlCommand command = new(query, connection);
                 command.Parameters.AddWithValue("@count", count);
@@ -323,6 +328,67 @@ namespace NewsApp.DAL
                 Console.WriteLine(sqle.Message);
                 LastError = sqle.Message;
                 return false;
+            }
+        }
+
+        public List<Article> GetPendingArticles()
+        {
+            List<Article> articles = new List<Article>();
+            try
+            {
+                using (SqlConnection connection = GetConnection())
+                {
+                    connection.Open();
+                    // Lấy các bài có Status = 0
+                    string query = @"SELECT a.*, c.CategoryName, u.FullName as AuthorName 
+                                     FROM Article a 
+                                     JOIN Category c ON a.CategoryID = c.CategoryID
+                                     JOIN [User] u ON a.AuthorID = u.UserID
+                                     WHERE a.Status = 0
+                                     ORDER BY a.PublishDate ASC";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Article article = new()
+                            {
+                                ArticleID = reader.GetInt32(reader.GetOrdinal("ArticleID")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Content = reader.GetString(reader.GetOrdinal("Content")),
+                                // Kiểm tra null cho cột Image
+                                Image = reader.IsDBNull(reader.GetOrdinal("Image")) ? null : (byte[])reader["Image"],
+                                PublishDate = reader.GetDateTime(reader.GetOrdinal("PublishDate")),
+                                AuthorID = reader.GetInt32(reader.GetOrdinal("AuthorID")),
+                                AuthorName = reader.GetString(reader.GetOrdinal("AuthorName")),
+                                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                                CategoryName = reader.GetString(reader.GetOrdinal("CategoryName")),
+                                // Đọc thêm cột Status nếu cần (tùy chọn)
+                            };
+                            articles.Add(article);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi GetPendingArticles: " + ex.Message);
+            }
+            return articles;
+        }
+
+        public bool ApproveArticle(int articleId)
+        {
+            using (SqlConnection connection = GetConnection())
+            {
+                connection.Open();
+                string query = "UPDATE Article SET Status = 1 WHERE ArticleID = @id";
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@id", articleId);
+
+                return command.ExecuteNonQuery() > 0;
             }
         }
     }
