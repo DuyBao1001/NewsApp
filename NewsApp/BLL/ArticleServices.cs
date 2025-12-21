@@ -209,5 +209,14 @@ namespace NewsApp.BLL
             _clientSocket.SendRequest(packet);
         }
 
+        private void HandleConnectionStatusChanged(string message)
+        {
+            ConnectionStatusChanged?.Invoke(message);
+        }
+
+        private void HandleErrorData(string message)
+        {
+            ErrorData?.Invoke(message);
+        }
     }
 }
