@@ -87,5 +87,28 @@ namespace NewsApp.Network
 
             }
         }
+
+        public void SendRequest(Packet requestPacket)
+        {
+            try
+            {
+                if (isConnected && _client.Connected)
+                {
+                    string jsonRequest = JsonSerializer.Serialize(requestPacket);
+                    _writer?.WriteLine(jsonRequest);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorData?.Invoke("Dữ liệu không hợp lệ" + e.Message);
+            }
+        }
+        public void Disconnect()
+        {
+            isConnected = false;
+            _reader?.Close();
+            _writer?.Close();
+            _client?.Close();
+        }
     }
 }
