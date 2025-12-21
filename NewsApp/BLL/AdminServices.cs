@@ -192,15 +192,6 @@ namespace NewsApp.BLL
             }
         }
 
-        public void ApproveArticle(int articleId)
-        {
-            if (IsConnected)
-            {
-                // Serialize ID thành chuỗi JSON
-                string payload = JsonSerializer.Serialize(articleId);
-                Packet request = new(MessageProtocol.RequestCommand.APPROVE_ARTICLE, payload);
-                _clientSocket.SendRequest(request);
-            }
-        }
+        
     }
 }
