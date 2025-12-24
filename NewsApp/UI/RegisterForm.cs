@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using NewsApp.BLL;
 using NewsApp.Data;
@@ -13,18 +14,14 @@ namespace NewsApp.UI
         {
             InitializeComponent();
 
-            // Cài đặt mặc định
             tbPassword.PasswordChar = '●';
             tbConfirmPass.PasswordChar = '●';
 
-            // Mặc định chọn role là Reader
             cboxReader.Checked = true;
             cboxWriter.Checked = false;
 
-            // Khởi tạo AccountServices
             _accountServices = new AccountServices();
 
-            // Subscribe events
             _accountServices.ConnectionStatusChanged += (status) =>
             {
                 if (this.InvokeRequired)
@@ -59,24 +56,108 @@ namespace NewsApp.UI
 
         private void ProcessRegisterResult(bool success, string message)
         {
-            
+            if (success)
+            {
+                MessageBox.Show("Đăng ký thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Close();
+            }
+            else
+            {
+                MessageBox.Show(message, "Lỗi đăng ký", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void cboxReader_CheckedChanged(object sender, EventArgs e)
         {
-            
+            if (cboxReader.Checked)
+            {
+                cboxWriter.Checked = false;
+            }
+            else if (!cboxWriter.Checked)
+            {
+                cboxReader.Checked = true;
+            }
         }
 
         private void cboxWriter_CheckedChanged(object sender, EventArgs e)
         {
-            
+            if (cboxWriter.Checked)
+            {
+                cboxReader.Checked = false;
+            }
+            else if (!cboxReader.Checked)
+            {
+                cboxWriter.Checked = true;
+            }
         }
 
-        // --- XỬ LÝ ĐĂNG KÝ ---
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+
+                return Regex.IsMatch(email,
+                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                    RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return false;
+            }
+        }
+
 
         private void BtnRegister_Click(object sender, EventArgs e)
         {
-            
+            string fullName = tbFullName.Text.Trim();
+            string username = tbUsername.Text.Trim();
+            string password = tbPassword.Text;
+            string confirmPassword = tbConfirmPass.Text;
+            string email = tbEmail.Text.Trim();
+            DateTime birthDay = dtpickerBirth.Value;
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Tên đăng nhập và mật khẩu không được để trống!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                MessageBox.Show("Mật khẩu không khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(fullName))
+            {
+                MessageBox.Show("Vui lòng nhập họ tên!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(email))
+            {
+                MessageBox.Show("Vui lòng nhập email!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Định dạng email không hợp lệ! Vui lòng kiểm tra lại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedRole = cboxWriter.Checked ? "Writer" : "Reader";
+
+            if (!_accountServices.IsConnected)
+            {
+                MessageBox.Show("Không có kết nối đến server! Vui lòng đảm bảo server đang chạy.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            _accountServices.Register(username, password, email, birthDay, fullName, selectedRole);
         }
 
         private void linkLabelLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
