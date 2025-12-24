@@ -47,6 +47,7 @@
             tbPassword = new Guna.UI2.WinForms.Guna2TextBox();
             btnLogin = new Guna.UI2.WinForms.Guna2Button();
             guna2Panel1 = new Guna.UI2.WinForms.Guna2Panel();
+            llbForgotPassword = new LinkLabel();
             guna2Panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -58,9 +59,9 @@
             label1.Location = new Point(33, 27);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(323, 37);
+            label1.Size = new Size(310, 37);
             label1.TabIndex = 0;
-            label1.Text = "Welcome to NewsDaily!";
+            label1.Text = "Welcome to NewsApp!";
             // 
             // label2
             // 
@@ -137,7 +138,7 @@
             tbUsername.IconRightOffset = new Point(10, 0);
             tbUsername.IconRightSize = new Size(30, 30);
             tbUsername.Location = new Point(62, 141);
-            tbUsername.Margin = new Padding(4);
+            tbUsername.Margin = new Padding(4, 4, 4, 4);
             tbUsername.Name = "tbUsername";
             tbUsername.PlaceholderText = "";
             tbUsername.SelectedText = "";
@@ -162,7 +163,7 @@
             tbPassword.IconRightOffset = new Point(10, 0);
             tbPassword.IconRightSize = new Size(30, 30);
             tbPassword.Location = new Point(62, 212);
-            tbPassword.Margin = new Padding(4);
+            tbPassword.Margin = new Padding(4, 4, 4, 4);
             tbPassword.Name = "tbPassword";
             tbPassword.PlaceholderText = "";
             tbPassword.SelectedText = "";
@@ -181,7 +182,7 @@
             btnLogin.Font = new Font("Segoe UI", 9F);
             btnLogin.ForeColor = Color.White;
             btnLogin.Location = new Point(62, 276);
-            btnLogin.Margin = new Padding(2);
+            btnLogin.Margin = new Padding(2, 2, 2, 2);
             btnLogin.Name = "btnLogin";
             btnLogin.ShadowDecoration.CustomizableEdges = customizableEdges6;
             btnLogin.Size = new Size(249, 32);
@@ -195,6 +196,7 @@
             guna2Panel1.BackColor = SystemColors.MenuBar;
             guna2Panel1.BorderRadius = 6;
             guna2Panel1.BorderStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            guna2Panel1.Controls.Add(llbForgotPassword);
             guna2Panel1.Controls.Add(tbUsername);
             guna2Panel1.Controls.Add(btnLogin);
             guna2Panel1.Controls.Add(label3);
@@ -206,11 +208,22 @@
             guna2Panel1.Controls.Add(label4);
             guna2Panel1.CustomizableEdges = customizableEdges7;
             guna2Panel1.Location = new Point(216, 27);
-            guna2Panel1.Margin = new Padding(2);
+            guna2Panel1.Margin = new Padding(2, 2, 2, 2);
             guna2Panel1.Name = "guna2Panel1";
             guna2Panel1.ShadowDecoration.CustomizableEdges = customizableEdges8;
             guna2Panel1.Size = new Size(368, 371);
             guna2Panel1.TabIndex = 30;
+            // 
+            // llbForgotPassword
+            // 
+            llbForgotPassword.AutoSize = true;
+            llbForgotPassword.Location = new Point(130, 339);
+            llbForgotPassword.Name = "llbForgotPassword";
+            llbForgotPassword.Size = new Size(116, 20);
+            llbForgotPassword.TabIndex = 31;
+            llbForgotPassword.TabStop = true;
+            llbForgotPassword.Text = "Quên mật khẩu?";
+            llbForgotPassword.LinkClicked += llbForgotPassword_LinkClicked;
             // 
             // LoginForm
             // 
@@ -241,5 +254,6 @@
         private Guna.UI2.WinForms.Guna2TextBox tbPassword;
         private Guna.UI2.WinForms.Guna2Button btnLogin;
         private Guna.UI2.WinForms.Guna2Panel guna2Panel1;
+        private LinkLabel llbForgotPassword;
     }
 }
