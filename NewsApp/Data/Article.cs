@@ -7,7 +7,7 @@ namespace NewsApp.Data
         public int ArticleID { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
-        public byte[]? Image { get; set; } // Ảnh bìa
+        public byte[]? Image { get; set; } 
         public DateTime PublishDate { get; set; }
 
         public int AuthorID { get; set; }
