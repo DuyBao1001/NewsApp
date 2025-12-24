@@ -29,7 +29,6 @@ namespace NewsApp.UI
         private void InitializeComponent()
         {
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             pbAvatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             lblAuthor = new Label();
             lblContent = new Label();
@@ -46,6 +45,7 @@ namespace NewsApp.UI
             pbAvatar.ShadowDecoration.CustomizableEdges = customizableEdges1;
             pbAvatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             pbAvatar.Size = new Size(40, 40);
+            pbAvatar.SizeMode = PictureBoxSizeMode.Zoom;
             pbAvatar.TabIndex = 0;
             pbAvatar.TabStop = false;
             // 
@@ -55,7 +55,7 @@ namespace NewsApp.UI
             lblAuthor.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblAuthor.Location = new Point(60, 10);
             lblAuthor.Name = "lblAuthor";
-            lblAuthor.Size = new Size(60, 20);
+            lblAuthor.Size = new Size(59, 20);
             lblAuthor.TabIndex = 1;
             lblAuthor.Text = "Author";
             // 
