@@ -224,6 +224,7 @@ namespace NewsApp.DAL
                                  JOIN [User] U ON A.AuthorID = U.UserID 
                                  JOIN Category C ON A.CategoryID = C.CategoryID
                                  WHERE A.CategoryID = @categoryId
+                                 AND A.Status = 1
                                  ORDER BY A.PublishDate DESC";
                 SqlCommand command = new(query, connection);
                 command.Parameters.AddWithValue("@categoryId", categoryId);
@@ -273,6 +274,7 @@ namespace NewsApp.DAL
                                  JOIN [User] U ON A.AuthorID = U.UserID 
                                  JOIN Category C ON A.CategoryID = C.CategoryID
                                  WHERE A.Title LIKE @keyword
+                                 AND A.Status = 1
                                  ORDER BY A.PublishDate DESC";
                 SqlCommand command = new(query, connection);
                 command.Parameters.AddWithValue("@keyword", "%" + keyword + "%");
