@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using NewsApp.BLL;
+using NewsApp.Common;
 
 namespace NewsApp.BLL.Network
 {
     public class ServerSocket
     {
         private readonly TcpListener _listener;
-
         private Thread _serverThread;
         private bool _isRunning = false;
-
         public event Action<string>? OnLog;
-
         private const int PORT = 8080;
 
         public ServerSocket()
@@ -25,11 +24,9 @@ namespace NewsApp.BLL.Network
         {
             try
             {
-
                 _listener.Start();
                 _isRunning = true;
                 OnLog?.Invoke($"[Server - INFO] Server đã khởi động tại cổng {PORT}");
-                // Luồng lắng nghe client kết nối
                 _serverThread = new(ListenForClients)
                 {
                     IsBackground = true
@@ -44,25 +41,20 @@ namespace NewsApp.BLL.Network
             }
         }
 
-        // Hàm lắng nghe các kết nối từ client
         private void ListenForClients()
         {
             try
             {
                 while (_isRunning)
                 {
-                    // Chấp nhận client mới kết nối
                     if (!_listener.Pending())
                     {
                         Thread.Sleep(100);
                         continue;
                     }
-
                     TcpClient client = _listener.AcceptTcpClient();
                     HandlerClientRequest handlerClientRequest = new(client, this);
                     OnLog?.Invoke("[Server - INFO] Có client mới kết nối!");
-
-                    // Tạo luồng riêng để xử lý client
                     Thread clientThread = new(handlerClientRequest.HandleRequest)
                     {
                         IsBackground = true
@@ -75,11 +67,9 @@ namespace NewsApp.BLL.Network
                 OnLog?.Invoke($"[Server - ERROR] {ex.Message}");
                 Stop();
                 OnLog?.Invoke("[Server - INFO] Đã dừng server.");
-
             }
         }
 
-        // Danh sách user đang online: Username -> TcpClient
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TcpClient> _connectedUsers = new();
 
         public bool IsUserOnline(string username)
@@ -101,7 +91,6 @@ namespace NewsApp.BLL.Network
             }
         }
 
-        // Hàm dừng Server
         public void Stop()
         {
             _isRunning = false;
