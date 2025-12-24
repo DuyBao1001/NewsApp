@@ -4,6 +4,7 @@ using NewsApp.BLL.Network;
 using NewsApp.Common;
 using NewsApp.DAL;
 using NewsApp.Data;
+using NewsApp.Network;
 
 namespace NewsApp.BLL
 {
@@ -16,13 +17,10 @@ namespace NewsApp.BLL
         private readonly StreamWriter _streamWriter;
 
         private bool isConnected = true;
-
-        // Các Repository làm việc với database
         private readonly IAccountRepository _accountRepository;
         private readonly ArticleRepository _articleRepository;
-
+        //private AccountRepository _accountRepo = new AccountRepository();
         private readonly UserRepository _userRepository;
-
         private readonly CategoryRepository _categoryRepository;
         private readonly CommentRepository _commentRepository;
 
@@ -40,7 +38,6 @@ namespace NewsApp.BLL
             _commentRepository = new();
         }
 
-        // Hàm xử lý request của client
         public void HandleRequest()
         {
             try
@@ -114,6 +111,83 @@ namespace NewsApp.BLL
             string payload = packet.Payload;
             switch (command)
             {
+                case MessageProtocol.RequestCommand.FORGOT_PASSWORD:
+                    {
+                        try
+                        {
+                            string rawPayload = packet.Payload ?? "";
+                            string emailFromClient = "";
+
+                            if (rawPayload.Trim().StartsWith("{"))
+                            {
+                                var data = JsonSerializer.Deserialize<Dictionary<string, string>>(rawPayload, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                if (data != null && data.ContainsKey("Email"))
+                                {
+                                    emailFromClient = data["Email"].Trim();
+                                }
+                            }
+                            else
+                            {
+                                emailFromClient = rawPayload.Trim().Replace("\"", "");
+                            }
+
+                            Console.WriteLine($"[DEBUG] Đang kiểm tra Email: '[{emailFromClient}]' - Độ dài: {emailFromClient.Length}");
+
+                            if (string.IsNullOrEmpty(emailFromClient))
+                            {
+                                SendResponse(MessageProtocol.ResponseCommand.FORGOT_PASSWORD_FAIL, "Email không hợp lệ.");
+                                break;
+                            }
+
+                            if (_accountRepository.CheckEmailExists(emailFromClient))
+                            {
+                                string otp = new Random().Next(100000, 999999).ToString();
+                                OtpManager.SaveOtp(emailFromClient, otp);
+
+                                if (MailService.SendOTP(emailFromClient, otp))
+                                {
+                                    SendResponse(MessageProtocol.ResponseCommand.FORGOT_PASSWORD_SUCCESS, "Mã OTP đã được gửi về Email của bạn.");
+                                }
+                                else
+                                {
+                                    SendResponse(MessageProtocol.ResponseCommand.FORGOT_PASSWORD_FAIL, "Hệ thống không thể gửi mail lúc này.");
+                                }
+                            }
+                            else
+                            {
+                                SendResponse(MessageProtocol.ResponseCommand.FORGOT_PASSWORD_FAIL, "Email này chưa được đăng ký trên hệ thống.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[ERROR] Lỗi xử lý Quên mật khẩu: {ex.Message}");
+                            SendResponse(MessageProtocol.ResponseCommand.FORGOT_PASSWORD_FAIL, "Lỗi xử lý dữ liệu.");
+                        }
+                    }
+                    break;
+                case MessageProtocol.RequestCommand.RESET_PASSWORD:
+                    {
+                        try
+                        {
+                            var resetData = JsonSerializer.Deserialize<ResetPasswordModel>(packet.Payload);
+                            if (OtpManager.VerifyOtp(resetData.Email, resetData.OTP))
+                            {
+                                string hashedPassword = resetData.NewPassword;
+                                _accountRepository.ResetPassword(resetData.Email, hashedPassword);
+
+                                SendResponse(MessageProtocol.ResponseCommand.RESET_PASSWORD_SUCCESS, "Thành công.");
+                            }
+                            else
+                            {
+                                SendResponse(MessageProtocol.ResponseCommand.RESET_PASSWORD_FAIL, "Sai OTP.");
+                            }
+                        }
+                        catch
+                        {
+                            SendResponse(MessageProtocol.ResponseCommand.RESET_PASSWORD_FAIL, "Lỗi dữ liệu.");
+                        }
+                    }
+                    break;
                 case MessageProtocol.RequestCommand.LOGIN:
                     {
                         Account? account = JsonSerializer.Deserialize<Account>(payload);
@@ -179,6 +253,12 @@ namespace NewsApp.BLL
                                     (object)"Tên đăng nhập đã tồn tại"
                                 );
                                 _streamWriter.WriteLine(JsonSerializer.Serialize(failResponse));
+                                return;
+                            }
+
+                            if (_userRepository.CheckEmailExists(regModel.Email))
+                            {
+                                SendRegisterFail(payload, "Email này đã được sử dụng cho tài khoản khác");
                                 return;
                             }
 
@@ -395,8 +475,6 @@ namespace NewsApp.BLL
                         }
                     }
                     break;
-
-                // Admin Handlers
                 case MessageProtocol.RequestCommand.GET_ALL_USERS:
                     var users = _userRepository.GetAll();
                     Packet usersResponse = new(
@@ -405,7 +483,6 @@ namespace NewsApp.BLL
                     );
                     _streamWriter.WriteLine(JsonSerializer.Serialize(usersResponse));
                     break;
-
                 case MessageProtocol.RequestCommand.DELETE_USER:
                     try
                     {
@@ -445,7 +522,6 @@ namespace NewsApp.BLL
                     }
                     catch { }
                     break;
-
                 case MessageProtocol.RequestCommand.DELETE_ARTICLE:
                     try
                     {
@@ -488,7 +564,6 @@ namespace NewsApp.BLL
                     }
                     catch { }
                     break;
-
                 case MessageProtocol.RequestCommand.ADD_CATEGORY:
                     try
                     {
@@ -521,7 +596,6 @@ namespace NewsApp.BLL
                     }
                     catch { }
                     break;
-
                 case MessageProtocol.RequestCommand.UPDATE_CATEGORY:
                     try
                     {
@@ -565,7 +639,6 @@ namespace NewsApp.BLL
                     }
                     catch { }
                     break;
-
                 case MessageProtocol.RequestCommand.DELETE_CATEGORY:
                     try
                     {
@@ -602,7 +675,6 @@ namespace NewsApp.BLL
                     }
                     catch { }
                     break;
-
                 case MessageProtocol.RequestCommand.POST_ARTICLE:
                     try
                     {
@@ -675,7 +747,6 @@ namespace NewsApp.BLL
                         }
                     }
                     break;
-
                 case MessageProtocol.RequestCommand.APPROVE_ARTICLE:
                     {
                         try
@@ -743,10 +814,76 @@ namespace NewsApp.BLL
                         }
                     }
                     break;
+                case MessageProtocol.RequestCommand.CHANGE_PASSWORD:
+                    {
+                        try
+                        {
+                            var changePassModel = JsonSerializer.Deserialize<ChangePasswordModel>(payload);
+                            if (changePassModel != null)
+                            {
+                                string hashedOldPass = HashHelper.Hash(changePassModel.OldPassword);
 
+                                if (_accountRepository.VerifyPassword(changePassModel.Username, hashedOldPass))
+                                {
+                                    string hashedNewPass = HashHelper.Hash(changePassModel.NewPassword);
 
+                                    if (_accountRepository.UpdatePassword(changePassModel.Username, hashedNewPass))
+                                    {
+                                        Packet success = new(
+                                            MessageProtocol.ResponseCommand.CHANGE_PASSWORD_SUCCESS,
+                                            "Đổi mật khẩu thành công!"
+                                        );
+                                        _streamWriter.WriteLine(JsonSerializer.Serialize(success));
+                                    }
+                                    else
+                                    {
+                                        Packet fail = new(
+                                            MessageProtocol.ResponseCommand.CHANGE_PASSWORD_FAIL,
+                                            "Lỗi hệ thống: Không thể cập nhật mật khẩu."
+                                        );
+                                        _streamWriter.WriteLine(JsonSerializer.Serialize(fail));
+                                    }
+                                }
+                                else
+                                {
+                                    Packet fail = new(
+                                        MessageProtocol.ResponseCommand.CHANGE_PASSWORD_FAIL,
+                                        "Mật khẩu cũ không chính xác."
+                                    );
+                                    _streamWriter.WriteLine(JsonSerializer.Serialize(fail));
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _serverSocket.Log($"Error Change Password: {ex.Message}");
+                            Packet error = new(MessageProtocol.ResponseCommand.CHANGE_PASSWORD_FAIL, "Lỗi xử lý tại Server");
+                            _streamWriter.WriteLine(JsonSerializer.Serialize(error));
+                        }
+                    }
+                    break;
                 default:
                     break;
+            }
+        }
+
+        private void SendResponse(string command, string payload)
+        {
+            if (isConnected && _client.Connected)
+            {
+                try
+                {
+                    var responsePacket = new Packet { Command = command, Payload = payload };
+                    string jsonString = JsonSerializer.Serialize(responsePacket);
+
+                    _streamWriter.WriteLine(jsonString);
+                    _streamWriter.Flush();
+                }
+                catch (Exception ex)
+                {
+                    _serverSocket.Log($"[Error Send] {ex.Message}");
+                    isConnected = false;
+                }
             }
         }
 
@@ -762,6 +899,12 @@ namespace NewsApp.BLL
             _networkStream.Close();
             _client.Close();
             isConnected = false;
+        }
+
+        private void SendRegisterFail(string payload, string message)
+        {
+            Packet failResponse = new(MessageProtocol.ResponseCommand.REGISTER_FAIL, message);
+            _streamWriter.WriteLine(JsonSerializer.Serialize(failResponse));
         }
     }
 }
