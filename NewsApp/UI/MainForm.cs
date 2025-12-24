@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using NewsApp.BLL;
@@ -42,20 +43,16 @@ namespace NewsApp.UI
 
             _categoryServices.GetCategoriesResult += (categories) =>
             {
-                // Add "All" option
                 categories.Insert(0, new Category { CategoryID = -1, Name = "Tất cả" });
-
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(
-                        new Action(() =>
-                        {
-                            cbCategories.DisplayMember = "Name";
-                            cbCategories.ValueMember = "CategoryID";
-                            cbCategories.DataSource = categories;
-                            cbCategories.SelectedIndex = 0; // Default to "All"
-                        })
-                    );
+                    this.Invoke(new Action(() =>
+                    {
+                        cbCategories.DisplayMember = "Name";
+                        cbCategories.ValueMember = "CategoryID";
+                        cbCategories.DataSource = categories;
+                        cbCategories.SelectedIndex = 0;
+                    }));
                 }
                 else
                 {
@@ -68,34 +65,21 @@ namespace NewsApp.UI
 
             _articleServices.GetLatestArticlesResult += UpdateArticleList;
 
-            // Custom handler for Category result
             _articleServices.GetArticlesByCategoryResult += (articles) =>
             {
                 if (articles == null || articles.Count == 0)
                 {
                     if (this.InvokeRequired)
                     {
-                        this.Invoke(
-                            new Action(() =>
-                            {
-                                MessageBox.Show(
-                                    "Danh mục này chưa có bài viết nào. Đang hiển thị các bài viết mới nhất.",
-                                    "Thông báo",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Information
-                                );
-                                cbCategories.SelectedIndex = 0; // Switch back to "All"
-                            })
-                        );
+                        this.Invoke(new Action(() =>
+                        {
+                            MessageBox.Show("Danh mục này chưa có bài viết nào. Đang hiển thị các bài viết mới nhất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            cbCategories.SelectedIndex = 0;
+                        }));
                     }
                     else
                     {
-                        MessageBox.Show(
-                            "Danh mục này chưa có bài viết nào. Đang hiển thị các bài viết mới nhất.",
-                            "Thông báo",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information
-                        );
+                        MessageBox.Show("Danh mục này chưa có bài viết nào. Đang hiển thị các bài viết mới nhất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         cbCategories.SelectedIndex = 0;
                     }
                 }
@@ -107,42 +91,98 @@ namespace NewsApp.UI
 
             _articleServices.SearchArticlesResult += UpdateArticleList;
 
-            // Load categories and articles immediately
             _categoryServices.GetCategories();
             _articleServices.GetLatestArticles();
 
-            // Wire up events
             cbCategories.SelectedIndexChanged += CbCategories_SelectedIndexChanged;
             btnSearch.Click += BtnSearch_Click;
         }
 
         private void UpdateArticleList(List<Article> articles)
         {
-           
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    flpArticles.Controls.Clear();
+                    foreach (var article in articles)
+                    {
+                        ArticleControl articleControl = new ArticleControl();
+                        articleControl.SetArticle(article);
+                        articleControl.SetContext(_articleServices, _commentServices, user);
+                        flpArticles.Controls.Add(articleControl);
+                    }
+                }));
+            }
+            else
+            {
+                flpArticles.Controls.Clear();
+                foreach (var article in articles)
+                {
+                    ArticleControl articleControl = new ArticleControl();
+                    articleControl.SetArticle(article);
+                    articleControl.SetContext(_articleServices, _commentServices, user);
+                    flpArticles.Controls.Add(articleControl);
+                }
+            }
         }
 
         private void CbCategories_SelectedIndexChanged(object? sender, EventArgs e)
         {
-           
+            if (cbCategories.SelectedValue != null)
+            {
+                if (int.TryParse(cbCategories.SelectedValue.ToString(), out int categoryId))
+                {
+                    if (categoryId == -1)
+                    {
+                        _articleServices.GetLatestArticles();
+                    }
+                    else
+                    {
+                        _articleServices.GetArticlesByCategory(categoryId);
+                    }
+                }
+            }
         }
 
         private void BtnSearch_Click(object? sender, EventArgs e)
         {
-         
+            string keyword = txtSearch.Text.Trim();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                _articleServices.SearchArticles(keyword);
+            }
+            else
+            {
+                _articleServices.GetLatestArticles();
+            }
         }
 
         private void btnAdminPanel_Click(object sender, EventArgs e)
         {
-            
+            AdminServices adminServices = new AdminServices();
+            AdminForm adminForm = new(adminServices);
+            adminForm.ShowDialog();
         }
 
         private void btnProfile_Click(object sender, EventArgs e)
         {
+            ProfileForm profileFrom = new(user);
+            DialogResult result = profileFrom.ShowDialog();
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
 
         private void btnPostArticle_Click(object sender, EventArgs e)
         {
-            
+            NewArticleForm newArticleForm = new(_articleServices, _categoryServices, user);
+            DialogResult result = newArticleForm.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                _articleServices.GetLatestArticles();
+            }
         }
     }
 }
